@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dynamic Employee Directory</title>
+  <style>
+    /* ---------- GLOBAL STYLES ---------- */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #141e30, #243b55);
+      color: #f1f1f1;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* ---------- FILTER SECTION ---------- */
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 25px;
+    }
+
+    input, select, button {
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: none;
+      font-size: 15px;
+      outline: none;
+      transition: 0.3s ease;
+    }
+
+    input, select {
+      background-color: #1e2a47;
+      color: #fff;
+    }
+
+    input::placeholder {
+      color: #aaa;
+    }
+
+    input:focus, select:focus {
+      background-color: #2a3c65;
+      transform: scale(1.02);
+    }
+
+    button {
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 0 10px rgba(0, 114, 255, 0.5);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+    }
+
+    /* ---------- EMPLOYEE TABLE ---------- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #1e2a47;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+      animation: fadeIn 0.8s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    th, td {
+      padding: 15px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #0072ff;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+
+    tr {
+      transition: 0.3s ease;
+    }
+
+    tr:hover {
+      background-color: #2e4372;
+      transform: scale(1.01);
+    }
+
+    img.profile {
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #00c6ff;
+    }
+
+    a.report-link {
+      text-decoration: none;
+      color: #00c6ff;
+      font-weight: bold;
+      transition: 0.3s ease;
+    }
+
+    a.report-link:hover {
+      color: #00ffea;
+      text-shadow: 0 0 5px #00ffea;
+    }
+
+    /* ---------- ADD EMPLOYEE FORM ---------- */
+    form.add-employee-form {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    form.add-employee-form input {
+      flex: 1 1 200px;
+      background-color: #1b2640;
+    }
+
+    form.add-employee-form button {
+      flex: 1 1 150px;
+    }
+
+    /* ---------- RESPONSIVE DESIGN ---------- */
+    @media (max-width: 700px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      th {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 15px;
+        background-color: #1b2640;
+        border-radius: 10px;
+        padding: 10px;
+      }
+
+      td {
+        padding: 8px 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #00c6ff;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌟 Dynamic Employee Directory</h1>
+
+    <!-- Filters -->
+    <div class="filters">
+      <input type="text" id="searchInput" placeholder="🔍 Search employees...">
+      <select id="departmentFilter">
+        <option value="">All Departments</option>
+        <option value="Engineering">Engineering</option>
+        <option value="Design">Design</option>
+        <option value="QA">QA</option>
+        <option value="Management">Management</option>
+      </select>
+    </div>
+
+    <!-- Employee Table -->
+    <table id="employeeTable">
+      <thead>
+        <tr>
+          <th>Profile</th>
+          <th>Name</th>
+          <th>Position</th>
+          <th>Department</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Report</th>
+        </tr>
+      </thead>
+      <tbody id="employeeBody"></tbody>
+    </table>
+
+    <!-- Add Employee Form -->
+    <h2>➕ Add New Employee</h2>
+    <form class="add-employee-form" id="addEmployeeForm">
+      <input type="text" id="empName" placeholder="Full Name" required>
+      <input type="text" id="empPosition" placeholder="Position" required>
+      <input type="text" id="empDepartment" placeholder="Department" required>
+      <input type="email" id="empEmail" placeholder="Email" required>
+      <input type="text" id="empPhone" placeholder="Phone" required>
+      <input type="url" id="empProfile" placeholder="Profile Image URL" required>
+      <input type="url" id="empReport" placeholder="Report Link URL" required>
+      <button type="submit">Add Employee</button>
+    </form>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const departmentFilter = document.getElementById('departmentFilter');
+    const employeeBody = document.getElementById('employeeBody');
+    const addEmployeeForm = document.getElementById('addEmployeeForm');
+    let employees = [];
+
+    function renderEmployees() {
+      employeeBody.innerHTML = '';
+      employees.forEach(emp => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td data-label="Profile"><img class="profile" src="${emp.profile}" alt="${emp.name}"></td>
+          <td data-label="Name">${emp.name}</td>
+          <td data-label="Position">${emp.position}</td>
+          <td data-label="Department">${emp.department}</td>
+          <td data-label="Email">${emp.email}</td>
+          <td data-label="Phone">${emp.phone}</td>
+          <td data-label="Report"><a class="report-link" href="${emp.report}" target="_blank">View Report</a></td>
+        `;
+        employeeBody.appendChild(row);
+      });
+      filterTable();
+    }
+
+    function filterTable() {
+      const searchText = searchInput.value.toLowerCase();
+      const departmentText = departmentFilter.value.toLowerCase();
+      const rows = employeeBody.getElementsByTagName('tr');
+
+      for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        let rowText = '';
+        for (let j = 1; j < cells.length - 1; j++) {
+          rowText += cells[j].textContent.toLowerCase();
+        }
+        const rowDept = cells[3].textContent.toLowerCase();
+        const matchesSearch = rowText.includes(searchText);
+        const matchesDept = departmentText === '' || rowDept === departmentText;
+        rows[i].style.display = matchesSearch && matchesDept ? '' : 'none';
+      }
+    }
+
+    searchInput.addEventListener('keyup', filterTable);
+    departmentFilter.addEventListener('change', filterTable);
+
+    addEmployeeForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const newEmployee = {
+        name: document.getElementById('empName').value,
+        position: document.getElementById('empPosition').value,
+        department: document.getElementById('empDepartment').value,
+        email: document.getElementById('empEmail').value,
+        phone: document.getElementById('empPhone').value,
+        profile: document.getElementById('empProfile').value,
+        report: document.getElementById('empReport').value
+      };
+      employees.push(newEmployee);
+      addEmployeeForm.reset();
+      renderEmployees();
+    });
+
+    // Sample data
+    employees.push(
+      {
+        name: "Alice Johnson",
+        position: "Software Engineer",
+        department: "Engineering",
+        email: "alice.johnson@example.com",
+        phone: "123-456-7890",
+        profile: "https://i.pravatar.cc/100?img=1",
+        report: "#"
+      },
+      {
+        name: "Bob Smith",
+        position: "Project Manager",
+        department: "Management",
+        email: "bob.smith@example.com",
+        phone: "234-567-8901",
+        profile: "https://i.pravatar.cc/100?img=2",
+        report: "#"
+      }
+    );
+    renderEmployees();
+  </script>
+</body>
+</html>
